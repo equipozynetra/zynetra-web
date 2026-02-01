@@ -11,129 +11,90 @@
 <body>
     <header id="header">
         <div class="container nav-container">
-            <div class="logo">
-                <a href="/" class="logo-link"><span class="logo-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14H12L11 22L21 10H12L13 2Z"/></svg></span>Zynetra</a>
-            </div>
+            <div class="logo"><a href="/" class="logo-link"><span class="logo-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14H12L11 22L21 10H12L13 2Z"/></svg></span>Zynetra</a></div>
             <a href="/" class="btn btn-sm btn-outline">Volver al Inicio</a>
         </div>
     </header>
-
     <div class="auth-container">
         <div class="auth-box">
             <div id="error-box" style="display:none;" class="error-msg"></div>
             <div class="auth-toggle">
-                <button id="btn-login" class="active" onclick="showLogin()">Iniciar Sesión</button>
-                <button id="btn-register" onclick="showRegister()">Registro Corporativo</button>
+                <button id="btn-login" class="active" onclick="toggle('login')">Iniciar Sesión</button>
+                <button id="btn-register" onclick="toggle('register')">Registro Corporativo</button>
             </div>
-
-            <!-- LOGIN -->
             <form id="form-login" action="/login" method="POST">
-                <div class="form-group">
-                    <label>Email Corporativo</label>
-                    <input type="email" name="email" class="form-input" required placeholder="ej. nombre@empresa.com">
-                </div>
-                <div class="form-group">
-                    <label>Contraseña</label>
-                    <input type="password" name="password" class="form-input" required placeholder="••••••••">
-                </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="remember" name="remember">
-                    <label for="remember">Recordarme</label>
-                </div>
-                <button type="submit" class="btn btn-primary btn-full">Entrar al Sistema</button>
+                <div class="form-group"><label>Email</label><input type="email" name="email" class="form-input" required placeholder="tu@empresa.com"></div>
+                <div class="form-group"><label>Contraseña</label><input type="password" name="password" class="form-input" required placeholder="••••••••"></div>
+                <div class="checkbox-group"><input type="checkbox" id="rem" name="remember"><label for="rem">Recordarme</label></div>
+                <button type="submit" class="btn btn-primary btn-full">Entrar</button>
             </form>
-
-            <!-- REGISTER -->
-            <form id="form-register" action="/register" method="POST" style="display:none;">
+            <form id="form-register" action="/register" method="POST" style="display:none;" onsubmit="startLoading()">
                 <div class="form-group"><label>Nombre</label><input type="text" name="name" class="form-input" required></div>
                 <div class="form-row">
-                     <div class="form-group"><label>Teléfono</label><input type="tel" name="phone" class="form-input" required></div>
-                     <div class="form-group custom-input-wrapper"><label>Cargo</label><input type="text" name="role" id="role-input" class="form-input" required autocomplete="off"><div class="suggestions-list" id="role-list"></div></div>
+                    <div class="form-group"><label>Teléfono</label><input type="tel" name="phone" class="form-input" required></div>
+                    <div class="form-group custom-input-wrapper"><label>Cargo</label><input type="text" name="role" id="role-in" class="form-input" required autocomplete="off"><div class="suggestions-list" id="role-list"></div></div>
                 </div>
-                <div class="form-group custom-input-wrapper"><label>Empresa</label><input type="text" name="company" id="company-input" class="form-input" required autocomplete="off"><div class="suggestions-list" id="company-list"></div></div>
+                <div class="form-group custom-input-wrapper"><label>Empresa</label><input type="text" name="company" id="comp-in" class="form-input" required autocomplete="off"><div class="suggestions-list" id="comp-list"></div></div>
                 <div class="form-group"><label>Email</label><input type="email" name="email" class="form-input" required></div>
                 <div class="form-group"><label>Contraseña</label><input type="password" name="password" class="form-input" required minlength="6"></div>
-
-                <!-- SLIDER CAPTCHA -->
                 <div class="form-group">
-                    <label>Seguridad</label>
-                    <div class="slider-captcha-container" id="slider-container">
-                        <div class="slider-text" id="slider-text">Desliza para verificar</div>
-                        <div class="slider-handle" id="slider-handle"><i class="fas fa-arrow-right"></i></div>
-                    </div>
+                    <div class="slider-captcha-container" id="slider"><div class="slider-text" id="slide-text">Desliza para verificar</div><div class="slider-handle" id="handle"><i class="fas fa-arrow-right"></i></div></div>
                 </div>
-
-                <button type="submit" id="btn-submit-register" class="btn btn-primary btn-full" disabled style="opacity:0.5; cursor:not-allowed;">Crear Cuenta</button>
+                <button type="submit" id="btn-sub" class="btn btn-primary btn-full" disabled style="opacity:0.5;">Crear Cuenta</button>
             </form>
         </div>
     </div>
-
     <script>
-        function showLogin() { document.getElementById('form-login').style.display='block'; document.getElementById('form-register').style.display='none'; document.getElementById('btn-login').classList.add('active'); document.getElementById('btn-register').classList.remove('active'); }
-        function showRegister() { document.getElementById('form-login').style.display='none'; document.getElementById('form-register').style.display='block'; document.getElementById('btn-login').classList.remove('active'); document.getElementById('btn-register').classList.add('active'); }
-
+        function toggle(mode) {
+            document.getElementById('form-login').style.display = mode==='login'?'block':'none';
+            document.getElementById('form-register').style.display = mode==='login'?'none':'block';
+            document.getElementById('btn-login').classList.toggle('active', mode==='login');
+            document.getElementById('btn-register').classList.toggle('active', mode!=='login');
+        }
+        function startLoading() {
+            const btn = document.getElementById('btn-sub');
+            btn.innerText = "Procesando...";
+            btn.style.opacity = "0.7";
+        }
+        
         // Slider Logic
-        const sliderContainer = document.getElementById('slider-container');
-        const sliderHandle = document.getElementById('slider-handle');
-        const submitBtn = document.getElementById('btn-submit-register');
-        let isDragging = false;
+        const s = document.getElementById('slider'), h = document.getElementById('handle'), b = document.getElementById('btn-sub');
+        let drag = false;
+        h.addEventListener('mousedown', () => !s.classList.contains('unlocked') && (drag=true));
+        h.addEventListener('touchstart', () => !s.classList.contains('unlocked') && (drag=true));
+        document.addEventListener('mouseup', () => { if(drag){ drag=false; if(!s.classList.contains('unlocked')) h.style.left='5px'; }});
+        document.addEventListener('touchend', () => { if(drag){ drag=false; if(!s.classList.contains('unlocked')) h.style.left='5px'; }});
+        document.addEventListener('mousemove', e => { if(!drag) return; move(e.clientX); });
+        document.addEventListener('touchmove', e => { if(!drag) return; move(e.touches[0].clientX); });
 
-        sliderHandle.addEventListener('mousedown', start);
-        sliderHandle.addEventListener('touchstart', start);
-        document.addEventListener('mouseup', end);
-        document.addEventListener('touchend', end);
-        document.addEventListener('mousemove', move);
-        document.addEventListener('touchmove', move);
-
-        function start() { if(!sliderContainer.classList.contains('unlocked')) isDragging = true; }
-        function move(e) {
-            if(!isDragging) return;
-            const rect = sliderContainer.getBoundingClientRect();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        function move(clientX) {
+            const rect = s.getBoundingClientRect();
             let x = clientX - rect.left - 20;
             if(x < 5) x = 5;
-            if(x > rect.width - 45) x = rect.width - 45;
-            sliderHandle.style.left = x + 'px';
-            if(x >= rect.width - 50) unlock();
-        }
-        function end() { if(!isDragging) return; isDragging = false; if(!sliderContainer.classList.contains('unlocked')) sliderHandle.style.left = '5px'; }
-        function unlock() {
-            isDragging = false;
-            sliderContainer.classList.add('unlocked');
-            sliderHandle.innerHTML = '<i class="fas fa-check"></i>';
-            document.getElementById('slider-text').textContent = "Verificado";
-            submitBtn.disabled = false;
-            submitBtn.style.opacity = '1';
-            submitBtn.style.cursor = 'pointer';
-        }
-
-        // Errors & Autocomplete
-        const urlParams = new URLSearchParams(window.location.search);
-        const error = urlParams.get('error');
-        if(error) {
-            const box = document.getElementById('error-box');
-            box.style.display = 'block';
-            if(error === 'invalid_credentials') box.textContent = 'Datos incorrectos.';
-            if(error === 'not_verified') box.textContent = 'Cuenta no verificada.';
-            if(error === 'email_exists') box.textContent = 'Email ya registrado.';
-        }
-
-        const roles = ["CEO", "CTO", "Manager", "Developer", "Autónomo"];
-        const companies = ["Startup", "Agencia", "E-commerce", "Salud", "Educación"];
-        function setupAuto(id, listId, data) {
-            const inp = document.getElementById(id), list = document.getElementById(listId);
-            inp.addEventListener('focus', () => render(data));
-            inp.addEventListener('input', () => render(data.filter(i => i.toLowerCase().includes(inp.value.toLowerCase()))));
-            document.addEventListener('click', e => { if(e.target!==inp && e.target!==list) list.classList.remove('active'); });
-            function render(items) {
-                list.innerHTML='';
-                if(!items.length) { list.classList.remove('active'); return; }
-                items.forEach(i => { const d=document.createElement('div'); d.className='suggestion-item'; d.textContent=i; d.onclick=()=>{inp.value=i; list.classList.remove('active');}; list.appendChild(d); });
-                list.classList.add('active');
+            if(x > s.offsetWidth - 45) x = s.offsetWidth - 45;
+            h.style.left = x + 'px';
+            if(x >= s.offsetWidth - 50) {
+                s.classList.add('unlocked'); h.innerHTML='<i class="fas fa-check"></i>'; 
+                document.getElementById('slide-text').innerText='Verificado'; b.disabled=false; b.style.opacity='1'; drag=false;
             }
         }
-        setupAuto('role-input', 'role-list', roles);
-        setupAuto('company-input', 'company-list', companies);
+
+        // Errors & Auto
+        const err = new URLSearchParams(window.location.search).get('error');
+        if(err) { const box=document.getElementById('error-box'); box.style.display='block'; box.innerText = err==='email_exists'?'Email ya registrado.':err; }
+        const roles=['CEO','CTO','Dev','Manager'], comps=['Startup','Agencia'];
+        function auto(id, listId, d) {
+            const i=document.getElementById(id), l=document.getElementById(listId);
+            i.addEventListener('focus', ()=>render(d));
+            i.addEventListener('input', ()=>render(d.filter(x=>x.toLowerCase().includes(i.value.toLowerCase()))));
+            document.addEventListener('click', e=>{if(e.target!=i && e.target!=l) l.classList.remove('active')});
+            function render(arr) {
+                l.innerHTML=''; if(!arr.length) return l.classList.remove('active');
+                arr.forEach(x=>{const div=document.createElement('div'); div.className='suggestion-item'; div.innerText=x; div.onclick=()=>{i.value=x; l.classList.remove('active')}; l.appendChild(div)});
+                l.classList.add('active');
+            }
+        }
+        auto('role-in','role-list', roles); auto('comp-in','comp-list', comps);
     </script>
 </body>
 </html>

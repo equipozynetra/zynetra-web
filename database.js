@@ -9,7 +9,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
 });
 
 db.serialize(() => {
-    // 1. Tabla Usuarios (Con campos de seguridad y verificación)
+    // 1. Tabla Usuarios
     db.run(`CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT,
@@ -23,7 +23,7 @@ db.serialize(() => {
         otp_expires INTEGER
     )`);
 
-    // 2. Crear Cuenta DUEÑO (Seed)
+    // 2. Cuenta Dueño (Seed)
     const ownerEmail = 'equipozynetra@gmail.com';
     const ownerPass = 'Betico_44';
     
@@ -31,14 +31,9 @@ db.serialize(() => {
         if (!row) {
             console.log("👑 Creando cuenta de Dueño...");
             const hashedPassword = await bcrypt.hash(ownerPass, 10);
-            
-            // El dueño nace verificado (is_verified = 1)
             db.run(`INSERT INTO users (name, email, password, phone, company, role, is_verified) VALUES (?, ?, ?, ?, ?, ?, 1)`, 
             ['Zombie4x4', ownerEmail, hashedPassword, '+34 000 000 000', 'Zynetra HQ', 'CEO & Founder'], 
-            (err) => {
-                if (err) console.error(err.message);
-                else console.log("✅ Cuenta de Dueño creada y lista.");
-            });
+            (err) => { if (!err) console.log("✅ Cuenta de Dueño creada."); });
         }
     });
 });

@@ -14,40 +14,7 @@ const db = require('./database');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// --- SEGURIDAD: HELMET ---
-// Importante: Desactivamos CSP temporalmente porque suele bloquear CSS externos o scripts inline
-app.use(helmet({
-    contentSecurityPolicy: false,
-    crossOriginEmbedderPolicy: false,
-}));
-
-app.set('trust proxy', 1); 
-
-// --- CONFIGURACIÓN DE ARCHIVOS ESTÁTICOS (ARREGLO CSS) ---
-// 1. Definir la ruta absoluta a la carpeta public
-const publicPath = path.join(__dirname, 'public');
-console.log("📂 Sirviendo archivos estáticos desde:", publicPath);
-
-// 2. Servir la carpeta public completa
-app.use(express.static(publicPath));
-
-// 3. REFUERZO: Forzar rutas específicas para CSS y JS (Esto arregla el error 404 en Render)
-app.use('/css', express.static(path.join(publicPath, 'css')));
-app.use('/js', express.static(path.join(publicPath, 'js')));
-app.use('/images', express.static(path.join(publicPath, 'images')));
-
-app.use(bodyParser.urlencoded({ extended: true }));
-
-app.use(session({
-    secret: 'zynetra_secure_session',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { httpOnly: true, secure: false, maxAge: 24 * 60 * 60 * 1000 }
-}));
-
-const authLimiter = rateLimit({ windowMs: 15*60*1000, max: 100 });
-
-// Email Config
+// Configuración Email
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
@@ -56,28 +23,47 @@ const transporter = nodemailer.createTransport({
 async function sendOTPEmail(email, code, name) {
     const htmlContent = `
     <div style="background-color:#020617; color:#fff; padding:40px; font-family:sans-serif; text-align:center;">
-        <h1 style="letter-spacing:3px;">ZYNETRA</h1>
-        <div style="background:#1e293b; padding:20px; border-radius:10px; margin:30px auto; max-width:400px;">
-            <h2 style="color:#6366f1;">${code}</h2>
+        <h1 style="letter-spacing:3px; color:#fff;">ZYNETRA</h1>
+        <div style="background:#1e293b; padding:20px; border-radius:10px; margin:30px auto; max-width:400px; border:1px solid #334155;">
+            <h2 style="color:#6366f1; letter-spacing:5px; font-size:32px; margin:0;">${code}</h2>
         </div>
         <p>Hola ${name}, usa este código para verificar tu cuenta. Expira en 15 min.</p>
+        <p style="color:#64748b; font-size:12px;">Si no fuiste tú, ignora este mensaje.</p>
     </div>`;
     
     try {
         await transporter.sendMail({ from: '"Zynetra Security"', to: email, subject: '🔐 Código de Verificación', html: htmlContent });
-        console.log(`Email enviado a ${email}`);
+        console.log(`✅ Email enviado a ${email}`);
     } catch (e) {
-        console.error("Error email:", e);
-        console.log(`CODIGO MANUAL (Consola): ${code}`);
+        console.error("❌ FALLO ENVÍO EMAIL:", e.message);
+        console.log(`🔑 CÓDIGO DE EMERGENCIA (Para Logs): [ ${code} ]`);
     }
 }
 
-// Limpieza de cuentas no verificadas
+// Limpieza automática
 cron.schedule('* * * * *', () => {
     db.run(`DELETE FROM users WHERE is_verified = 0 AND otp_expires < ?`, [Date.now()], (err) => {
         if(!err && this.changes > 0) console.log("🧹 Limpieza completada.");
     });
 });
+
+// Configuración App
+app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
+app.set('trust proxy', 1); 
+
+// Rutas Estáticas (Solución CSS)
+const publicPath = path.join(__dirname, 'public');
+app.use(express.static(publicPath));
+app.use('/css', express.static(path.join(publicPath, 'css')));
+app.use('/js', express.static(path.join(publicPath, 'js')));
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(session({
+    secret: 'zynetra_secret', resave: false, saveUninitialized: false,
+    cookie: { httpOnly: true, secure: false, maxAge: 24 * 60 * 60 * 1000 }
+}));
+
+const authLimiter = rateLimit({ windowMs: 15*60*1000, max: 100 });
 
 // API Session
 app.get('/api/session-status', (req, res) => {
@@ -100,7 +86,7 @@ app.get('/loading', (req, res) => req.session.userId ? res.sendFile(path.join(pu
 app.get('/dashboard', (req, res) => req.session.userId ? res.sendFile(path.join(publicPath, 'dashboard.html')) : res.redirect('/login'));
 app.get('/logout', (req, res) => { req.session.destroy(); res.redirect('/'); });
 
-// Registro
+// Registro (CORREGIDO PARA EVITAR BLOQUEO)
 app.post('/register', authLimiter, [body('email').isEmail().normalizeEmail()], async (req, res) => {
     const { name, email, password, phone, company, role } = req.body;
     const cleanEmail = email.trim().toLowerCase();
@@ -110,17 +96,30 @@ app.post('/register', authLimiter, [body('email').isEmail().normalizeEmail()], a
 
     db.run(`INSERT INTO users (name, email, password, phone, company, role, is_verified, otp_code, otp_expires) VALUES (?,?,?,?,?,?,0,?,?)`, 
     [name, cleanEmail, hashed, phone, company, role, otp, expires], 
-    async (err) => {
-        if(err) return res.redirect('/login?error=email_exists');
-        await sendOTPEmail(cleanEmail, otp, name);
+    async function(err) {
+        if(err) {
+            console.error("Error DB:", err.message);
+            return res.redirect('/login?error=email_exists');
+        }
+        
+        // Intentamos enviar email, pero NO bloqueamos si falla
+        // El usuario será redirigido siempre.
+        try {
+            await sendOTPEmail(cleanEmail, otp, name);
+        } catch (e) {
+            console.error("Fallo crítico en email:", e);
+        }
+        
         res.redirect(`/verify-otp?email=${encodeURIComponent(cleanEmail)}`);
     });
 });
 
-// Verificación
+// Verificación OTP
 app.post('/verify-code', (req, res) => {
     const { email, otp } = req.body;
-    db.get(`SELECT * FROM users WHERE email = ?`, [email], (err, user) => {
+    const cleanEmail = email.trim().toLowerCase();
+    
+    db.get(`SELECT * FROM users WHERE email = ?`, [cleanEmail], (err, user) => {
         if(user && user.otp_code === otp && user.otp_expires > Date.now()) {
             db.run(`UPDATE users SET is_verified=1, otp_code=NULL WHERE id=?`, [user.id], () => {
                 req.session.userId = user.id;
@@ -129,7 +128,7 @@ app.post('/verify-code', (req, res) => {
                 res.redirect('/loading');
             });
         } else {
-            res.redirect(`/verify-otp?email=${email}&error=invalid_code`);
+            res.redirect(`/verify-otp?email=${cleanEmail}&error=invalid_code`);
         }
     });
 });
