@@ -4,56 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | Zynetra</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600&family=Courier+Prime&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-
     <header id="header">
         <div class="container nav-container">
             <div class="logo">
-                <!-- AÑADIDA la clase "logo-link" para que el JS sepa dónde poner la etiqueta -->
                 <a href="/dashboard" class="logo-link" style="pointer-events: none;"> 
                     <span class="logo-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14H12L11 22L21 10H12L13 2Z"/></svg></span>
                     Zynetra 
-                    <!-- AQUÍ EL JS PONDRÁ LA ETIQUETA AUTOMÁTICAMENTE -->
                 </a>
             </div>
             <a href="/logout" class="btn btn-sm btn-outline">Cerrar Sesión</a>
         </div>
     </header>
-
     <div class="dashboard-container">
-        
         <div class="terminal-loader">
-            <div class="terminal-header">
-                <span style="background:#ef4444"></span>
-                <span style="background:#f59e0b"></span>
-                <span style="background:#10b981"></span>
-            </div>
+            <div class="terminal-header"><span style="background:#ef4444"></span><span style="background:#f59e0b"></span><span style="background:#10b981"></span></div>
             <div class="terminal-body">
-                <p>> Iniciando conexión segura...</p>
-                <p>> Verificando credenciales... OK</p>
-                <p>> Cargando panel de proyecto... [████████░░] 80%</p>
+                <p>> Conexión segura establecida.</p>
+                <p>> Identidad verificada.</p>
                 <br>
-                <p style="color:white;">BIENVENIDO AL NÚCLEO DE ZYNETRA.</p>
-                <p>Tu espacio privado está en fase de despliegue.</p>
+                <p style="color:white;">BIENVENIDO AL ESPACIO ZYNETRA.</p>
+                <p>Sistema funcionando correctamente.</p>
                 <br>
-                <p>> Estado: <span style="color:#f59e0b">EN DESARROLLO</span><span class="cursor">_</span></p>
+                <p>> Estado: <span style="color:#f59e0b">ONLINE</span><span class="cursor">_</span></p>
             </div>
         </div>
-
         <div style="margin-top: 40px; max-width: 500px;">
-            <h3>Estamos construyendo tu panel</h3>
-            <p>Pronto podrás ver aquí el estado de tus proyectos, facturas y solicitar soporte directo.</p>
-            <br>
-            <a href="/" class="btn btn-primary btn-sm">Volver a la web pública</a>
+            <h3>Panel de Control</h3>
+            <p>Aquí verás próximamente tus proyectos y facturas.</p>
+            <br><a href="/" class="btn btn-primary btn-sm">Ir a la web pública</a>
         </div>
-
     </div>
-
-    <!-- IMPORTANTE: El script debe estar aquí para ejecutar la lógica de la etiqueta -->
     <script src="/js/main.js"></script>
 </body>
 </html>

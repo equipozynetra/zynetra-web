@@ -10,37 +10,26 @@
 <body>
     <div class="auth-container">
         <div class="auth-box" style="text-align: center;">
-            <div style="font-size: 3rem; margin-bottom: 20px;">📧</div>
-            <h2>Verifica tu Correo</h2>
-            <p style="margin-bottom: 30px;">Hemos enviado un código de 6 dígitos a tu email. Tienes 15 minutos.</p>
-
+            <div style="font-size: 3rem; margin-bottom: 20px;">📩</div>
+            <h2>Revisa tu Email</h2>
+            <p style="margin-bottom: 30px; color: #94a3b8;">Hemos enviado un código de seguridad. Caduca en 15 minutos.</p>
             <div id="error-box" style="display:none;" class="error-msg"></div>
-
             <form action="/verify-code" method="POST">
                 <input type="hidden" name="email" id="hidden-email">
-                
                 <div class="form-group">
-                    <input type="text" name="otp" class="form-input" required placeholder="XXXXXX" style="text-align: center; font-size: 1.5rem; letter-spacing: 5px;" maxlength="6">
+                    <input type="text" name="otp" class="form-input" required placeholder="000000" style="text-align: center; font-size: 2rem; letter-spacing: 8px; font-weight: bold;" maxlength="6">
                 </div>
-
                 <button type="submit" class="btn btn-primary btn-full">Validar Cuenta</button>
             </form>
         </div>
     </div>
-
     <script>
-        // Obtener email de la URL y ponerlo en el input hidden
-        const urlParams = new URLSearchParams(window.location.search);
-        const email = urlParams.get('email');
-        const error = urlParams.get('error');
-        
-        if(email) document.getElementById('hidden-email').value = email;
-        
-        const errorBox = document.getElementById('error-box');
-        if (error) {
-            errorBox.style.display = 'block';
-            if(error === 'invalid_code') errorBox.textContent = 'Código incorrecto o expirado.';
-            if(error === 'invalid_user') errorBox.textContent = 'Usuario no encontrado.';
+        const p = new URLSearchParams(window.location.search);
+        if(p.get('email')) document.getElementById('hidden-email').value = p.get('email');
+        if(p.get('error')) {
+            const b = document.getElementById('error-box');
+            b.style.display = 'block';
+            b.textContent = p.get('error') === 'invalid_code' ? 'Código incorrecto o expirado.' : 'Error de usuario.';
         }
     </script>
 </body>

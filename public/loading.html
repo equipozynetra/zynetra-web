@@ -3,36 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cargando Zynetra OS...</title>
+    <title>Cargando Zynetra...</title>
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/styles.css">
-    <!-- Redirigir automáticamente después de 7 segundos -->
-    <meta http-equiv="refresh" content="7;url=/dashboard">
+    <meta http-equiv="refresh" content="3.5;url=/dashboard">
 </head>
 <body>
     <div class="loading-wrapper">
         <div class="hex-loader"></div>
-        <div class="loading-text">INICIALIZANDO SISTEMA...</div>
-        <div class="loading-text" id="loading-details" style="font-size: 0.8rem; margin-top: 10px; opacity: 0.7;"></div>
+        <div class="loading-text">ACCEDIENDO AL NÚCLEO...</div>
+        <div class="loading-text" id="details" style="font-size: 0.8rem; margin-top: 15px; opacity: 0.7;"></div>
     </div>
-
     <script>
-        const details = document.getElementById('loading-details');
-        const steps = [
-            "Conectando a base de datos segura...",
-            "Verificando credenciales encriptadas...",
-            "Cargando módulos de usuario...",
-            "Sincronizando con Zynetra Cloud...",
-            "Acceso concedido."
-        ];
-        
-        let i = 0;
-        setInterval(() => {
-            if (i < steps.length) {
-                details.innerText = "> " + steps[i];
-                i++;
-            }
-        }, 600);
+        const steps = ["Validando credenciales...", "Cifrando conexión SSL...", "Cargando entorno de usuario...", "Sincronizando...", "Acceso concedido."];
+        let i=0, el=document.getElementById('details');
+        setInterval(()=>{ if(i<steps.length) el.innerText = "> " + steps[i++]; }, 600);
     </script>
 </body>
 </html>
