@@ -1,0 +1,22 @@
+{
+  "name": "zynetra-web",
+  "version": "1.0.0",
+  "description": "Sitio web corporativo de Zynetra",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "body-parser": "^2.2.2",
+    "express": "^4.18.2",
+    "express-rate-limit": "^8.2.1",
+    "express-session": "^1.19.0",
+    "express-validator": "^7.3.1",
+    "helmet": "^8.1.0",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^7.0.13",
+    "sqlite3": "^5.1.7"
+  }
+}

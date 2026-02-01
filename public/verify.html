@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificación | Zynetra</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-box" style="text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 20px;">📧</div>
+            <h2>Verifica tu Correo</h2>
+            <p style="margin-bottom: 30px;">Hemos enviado un código de 6 dígitos a tu email. Tienes 15 minutos.</p>
+
+            <div id="error-box" style="display:none;" class="error-msg"></div>
+
+            <form action="/verify-code" method="POST">
+                <input type="hidden" name="email" id="hidden-email">
+                
+                <div class="form-group">
+                    <input type="text" name="otp" class="form-input" required placeholder="XXXXXX" style="text-align: center; font-size: 1.5rem; letter-spacing: 5px;" maxlength="6">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full">Validar Cuenta</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Obtener email de la URL y ponerlo en el input hidden
+        const urlParams = new URLSearchParams(window.location.search);
+        const email = urlParams.get('email');
+        const error = urlParams.get('error');
+        
+        if(email) document.getElementById('hidden-email').value = email;
+        
+        const errorBox = document.getElementById('error-box');
+        if (error) {
+            errorBox.style.display = 'block';
+            if(error === 'invalid_code') errorBox.textContent = 'Código incorrecto o expirado.';
+            if(error === 'invalid_user') errorBox.textContent = 'Usuario no encontrado.';
+        }
+    </script>
+</body>
+</html>

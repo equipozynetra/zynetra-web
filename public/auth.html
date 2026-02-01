@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso Cliente | Zynetra</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <!-- FontAwesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <header id="header">
+        <div class="container nav-container">
+            <div class="logo">
+                <a href="/" class="logo-link">
+                    <span class="logo-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14H12L11 22L21 10H12L13 2Z"/></svg></span>
+                    Zynetra
+                </a>
+            </div>
+            <a href="/" class="btn btn-sm btn-outline">Volver al Inicio</a>
+        </div>
+    </header>
+
+    <div class="auth-container">
+        <div class="auth-box">
+            
+            <div id="error-box" style="display:none;" class="error-msg"></div>
+
+            <div class="auth-toggle">
+                <button id="btn-login" class="active" onclick="showLogin()">Iniciar Sesión</button>
+                <button id="btn-register" onclick="showRegister()">Registro Corporativo</button>
+            </div>
+
+            <!-- LOGIN FORM -->
+            <form id="form-login" action="/login" method="POST">
+                <div class="form-group">
+                    <label>Email Corporativo</label>
+                    <input type="email" name="email" class="form-input" required placeholder="ej. nombre@empresa.com">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" name="password" class="form-input" required placeholder="••••••••">
+                </div>
+                
+                <!-- CHECKBOX RECORDARME -->
+                <div class="checkbox-group">
+                    <input type="checkbox" id="remember" name="remember">
+                    <label for="remember">Mantener sesión iniciada</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full">Entrar al Sistema</button>
+            </form>
+
+            <!-- REGISTER FORM -->
+            <form id="form-register" action="/register" method="POST" style="display:none;">
+                <div class="form-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" name="name" class="form-input" required placeholder="Nombre y Apellidos">
+                </div>
+                
+                <div class="form-row">
+                     <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" name="phone" class="form-input" required placeholder="+34 ...">
+                    </div>
+                    <div class="form-group custom-input-wrapper">
+                        <label>Cargo / Rol</label>
+                        <input type="text" name="role" id="role-input" class="form-input" required placeholder="Escribe..." autocomplete="off">
+                        <div class="suggestions-list" id="role-list"></div>
+                    </div>
+                </div>
+
+                <div class="form-group custom-input-wrapper">
+                    <label>Nombre de la Empresa</label>
+                    <input type="text" name="company" id="company-input" class="form-input" required placeholder="Tu Empresa S.L." autocomplete="off">
+                    <div class="suggestions-list" id="company-list"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Email Corporativo</label>
+                    <input type="email" name="email" class="form-input" required placeholder="ej. nombre@empresa.com">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" name="password" class="form-input" required placeholder="Mínimo 6 caracteres">
+                </div>
+
+                <!-- SLIDER CAPTCHA -->
+                <div class="form-group">
+                    <label>Verificación de Seguridad</label>
+                    <div class="slider-captcha-container" id="slider-container">
+                        <div class="slider-text" id="slider-text">Desliza para verificar</div>
+                        <div class="slider-handle" id="slider-handle"><i class="fas fa-arrow-right"></i></div>
+                    </div>
+                    <!-- Input oculto que valida el envío -->
+                    <input type="hidden" id="captcha-valid" name="captcha-valid" required>
+                </div>
+
+                <button type="submit" id="btn-submit-register" class="btn btn-primary btn-full" disabled style="opacity:0.5; cursor:not-allowed;">Crear Cuenta Segura</button>
+            </form>
+
+        </div>
+    </div>
+
+    <script>
+        function showLogin() {
+            document.getElementById('form-login').style.display = 'block';
+            document.getElementById('form-register').style.display = 'none';
+            document.getElementById('btn-login').classList.add('active');
+            document.getElementById('btn-register').classList.remove('active');
+        }
+
+        function showRegister() {
+            document.getElementById('form-login').style.display = 'none';
+            document.getElementById('form-register').style.display = 'block';
+            document.getElementById('btn-login').classList.remove('active');
+            document.getElementById('btn-register').classList.add('active');
+        }
+
+        // --- SLIDER CAPTCHA LOGIC ---
+        const sliderContainer = document.getElementById('slider-container');
+        const sliderHandle = document.getElementById('slider-handle');
+        const sliderText = document.getElementById('slider-text');
+        const submitBtn = document.getElementById('btn-submit-register');
+        let isDragging = false;
+
+        sliderHandle.addEventListener('mousedown', startDrag);
+        sliderHandle.addEventListener('touchstart', startDrag);
+
+        function startDrag(e) {
+            if (sliderContainer.classList.contains('unlocked')) return;
+            isDragging = true;
+        }
+
+        document.addEventListener('mouseup', endDrag);
+        document.addEventListener('touchend', endDrag);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('touchmove', drag);
+
+        function drag(e) {
+            if (!isDragging) return;
+            
+            const containerRect = sliderContainer.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            
+            let newLeft = clientX - containerRect.left - 20; // Center handle
+            
+            if (newLeft < 5) newLeft = 5;
+            if (newLeft > containerRect.width - 45) newLeft = containerRect.width - 45;
+
+            sliderHandle.style.left = newLeft + 'px';
+
+            // Check unlock
+            if (newLeft >= containerRect.width - 50) {
+                unlock();
+            }
+        }
+
+        function endDrag() {
+            if (!isDragging) return;
+            isDragging = false;
+            if (!sliderContainer.classList.contains('unlocked')) {
+                sliderHandle.style.left = '5px'; // Reset
+            }
+        }
+
+        function unlock() {
+            isDragging = false;
+            sliderContainer.classList.add('unlocked');
+            sliderHandle.innerHTML = '<i class="fas fa-check"></i>';
+            sliderText.textContent = "Verificado Humano";
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+        }
+
+        // --- ERROR HANDLING & AUTOCOMPLETE (Igual que antes) ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        const errorBox = document.getElementById('error-box');
+        if (error) {
+            errorBox.style.display = 'block';
+            if(error === 'invalid_credentials') errorBox.textContent = 'Credenciales incorrectas.';
+            if(error === 'not_verified') errorBox.textContent = 'Cuenta no verificada o expirada.';
+            if(error === 'email_exists') errorBox.textContent = 'Email ya registrado.';
+        }
+
+        const roles = ["CEO", "Fundador", "CTO", "Product Manager", "Marketing Manager", "Desarrollador", "Autónomo"];
+        const companies = ["Startup", "Agencia", "E-commerce", "Consultoría", "Freelance", "Salud", "Educación"];
+
+        function setupAutocomplete(inputId, listId, data) {
+            const input = document.getElementById(inputId);
+            const list = document.getElementById(listId);
+            input.addEventListener('focus', () => renderList(data));
+            input.addEventListener('input', () => {
+                const val = input.value.toLowerCase();
+                renderList(data.filter(item => item.toLowerCase().includes(val)));
+            });
+            document.addEventListener('click', (e) => {
+                if (e.target !== input && e.target !== list) list.classList.remove('active');
+            });
+            function renderList(items) {
+                list.innerHTML = '';
+                if (items.length === 0) { list.classList.remove('active'); return; }
+                items.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.textContent = item;
+                    div.onclick = () => { input.value = item; list.classList.remove('active'); };
+                    list.appendChild(div);
+                });
+                list.classList.add('active');
+            }
+        }
+        setupAutocomplete('role-input', 'role-list', roles);
+        setupAutocomplete('company-input', 'company-list', companies);
+    </script>
+</body>
+</html>
